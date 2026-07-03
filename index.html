@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>BEN PONG</title>
+<title>benpong.com</title>
 <style>
   html,body{margin:0;height:100%;background:#07070c;overflow:hidden;
     font-family:'Courier New',Courier,monospace;color:#e9e9ef;-webkit-user-select:none;user-select:none;}
@@ -33,6 +33,15 @@
     font-size:13px;padding:6px 11px;border-radius:5px;cursor:pointer;}
   #btns button:active{transform:translateY(1px);}
   #help{position:fixed;bottom:10px;left:12px;z-index:6;font-size:11px;opacity:.4;letter-spacing:.05em;line-height:1.6;pointer-events:none;}
+  #rotate{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;background:radial-gradient(ellipse at center,#1c1036 0%,#07070c 72%);padding:20px;}
+  #rotate.show{display:flex;}
+  #rotate .phone{font-size:clamp(64px,22vw,130px);line-height:1;transform-origin:50% 50%;animation:tilt 2.1s ease-in-out infinite;}
+  @keyframes tilt{0%,18%{transform:rotate(0deg)}46%,72%{transform:rotate(-90deg)}100%{transform:rotate(-90deg)}}
+  #rotate .rtitle{margin-top:.35em;font-size:clamp(24px,7vw,52px);color:#39ff14;letter-spacing:.05em;
+    text-shadow:0 0 16px #39ff14,3px 3px 0 #ff2e88;}
+  #rotate .rsub{margin-top:.55em;font-size:clamp(13px,3.6vw,20px);opacity:.85;line-height:1.5;max-width:26ch;}
+  #rotate .rwink{margin-top:1em;font-size:clamp(12px,3vw,16px);color:#ffd23f;opacity:.9;animation:bl 1.1s steps(2,start) infinite;}
 </style>
 </head>
 <body>
@@ -51,13 +60,22 @@
   </div>
   <div class="go">▶ CLICK / TAP TO SERVE</div>
 </div>
+<div id="rotate">
+  <div class="phone">📱</div>
+  <div class="rtitle">TURN IT SIDEWAYS!</div>
+  <div class="rsub">BEN PONG is a <b>landscape</b> sport. Rotate your phone to enter the arena.</div>
+  <div class="rwink">…Ben is waiting. 👀</div>
+</div>
 <script>
 (function(){
 "use strict";
 var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 var overlay=document.getElementById('overlay'), psEl=document.getElementById('ps'), asEl=document.getElementById('as');
 var tagEl=document.getElementById('tag'), muteBtn=document.getElementById('mute'), resetBtn=document.getElementById('reset');
+var rotateEl=document.getElementById('rotate');
 var W=0,H=0,DPR=1;
+var isMobile=(window.matchMedia && matchMedia('(pointer: coarse)').matches && matchMedia('(hover: none)').matches) || ('ontouchstart' in window && !window.matchMedia);
+var rotateBlock=false, lastThreeTap=0;
 
 /* ---------- sprites + silhouette masks (alpha-driven) ---------- */
 function buildMask(img){
@@ -132,6 +150,14 @@ function resize(){
   clampPaddle(paddleL); clampPaddle(paddleR);
 }
 function clampPaddle(p){ if(p.y<0)p.y=0; if(p.y>H-p.h)p.y=H-p.h; }
+function updateOrientation(){
+  var portrait = window.innerHeight > window.innerWidth;
+  var block = isMobile && portrait;
+  if(block===rotateBlock) return;
+  rotateBlock=block;
+  rotateEl.className = block ? 'show' : '';
+  if(actx){ if(block) actx.suspend(); else if(!paused && mode==='play') actx.resume(); }
+}
 
 function serve(dir){
   bx=W/2-ballW/2; by=H/2-ballH/2;
@@ -222,7 +248,7 @@ function paddleBounce(p,dir){
 
 /* ---------- update ---------- */
 function update(dt){
-  if(mode!=='play' || paused) return;
+  if(mode!=='play' || paused || rotateBlock) return;
   if(bannerT>0){ bannerT-=dt; if(bannerT<=0 && frozen){ frozen=false; serve(pendingDir); } if(frozen) return; }
   gameClock+=dt;
   if(gameClock>=nextFart){ playFart(); nextFart=gameClock+3.5+Math.random()*8.5; }
@@ -506,7 +532,13 @@ function playFart(){ if(!actx)return; var t=actx.currentTime, R=Math.random;
 /* ---------- input ---------- */
 function setPointer(e){ var y; if(e.touches&&e.touches.length)y=e.touches[0].clientY; else y=e.clientY; pointerY=y; }
 window.addEventListener('mousemove',setPointer);
-window.addEventListener('touchstart',function(e){setPointer(e);e.preventDefault();},{passive:false});
+window.addEventListener('touchstart',function(e){
+  if(isMobile && e.touches.length>=3){                 // secret mobile cheat: 3-finger double-tap = skip Ben
+    if(e.timeStamp - lastThreeTap < 650){ lastThreeTap=0; cheatSkip(); } else { lastThreeTap=e.timeStamp; }
+    e.preventDefault(); return;
+  }
+  setPointer(e); e.preventDefault();
+},{passive:false});
 window.addEventListener('touchmove',function(e){setPointer(e);e.preventDefault();},{passive:false});
 window.addEventListener('keydown',function(e){
   if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){keys.up=true;pointerY=null;}
@@ -518,7 +550,8 @@ window.addEventListener('keyup',function(e){
   if(e.key==='ArrowUp'||e.key==='w'||e.key==='W')keys.up=false;
   if(e.key==='ArrowDown'||e.key==='s'||e.key==='S')keys.down=false;
 });
-window.addEventListener('resize',function(){ if(allReady)resize(); });
+window.addEventListener('resize',function(){ if(allReady)resize(); updateOrientation(); });
+window.addEventListener('orientationchange',function(){ setTimeout(function(){ if(allReady)resize(); updateOrientation(); },120); });
 muteBtn.addEventListener('click',function(e){ e.stopPropagation(); musicOn=!musicOn; if(master)master.gain.value=musicOn?0.82:0; muteBtn.textContent=musicOn?'♪ MUSIC: ON':'♪ MUSIC: OFF'; });
 resetBtn.addEventListener('click',function(e){ e.stopPropagation(); startRun(); });
 
@@ -543,7 +576,8 @@ overlay.addEventListener('touchend',function(e){e.preventDefault();boot();},{pas
 
 /* ---------- load sprites ---------- */
 LEVELS.forEach(function(L){ var im=new Image(); im.onload=function(){ L._mask=buildMask(im);
-  masksLoaded++; if(masksLoaded===LEVELS.length){ allReady=true; applyLevel(0); resize(); render(); } }; im.src=L.src; });
+  masksLoaded++; if(masksLoaded===LEVELS.length){ allReady=true; applyLevel(0); resize(); updateOrientation(); render(); } }; im.src=L.src; });
+updateOrientation();
 })();
 </script>
 </body>
