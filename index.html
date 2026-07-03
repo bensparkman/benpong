@@ -145,7 +145,7 @@ function resize(){
   cv.style.width=W+'px'; cv.style.height=H+'px';
   ctx.setTransform(DPR,0,0,DPR,0,0);
   recomputeBall();
-  var ph=Math.max(80,Math.min(H*0.24,180));
+  var ph=isMobile?Math.max(50,Math.min(H*0.16,120)):Math.max(80,Math.min(H*0.24,180));
   paddleL.h=paddleR.h=ph;
   paddleL.w=paddleR.w=Math.max(12,Math.round(W*0.012));
   paddleL.x=Math.round(W*0.035);
