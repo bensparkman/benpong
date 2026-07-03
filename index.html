@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BEN PONG">
 <title>benpong.com</title>
 <style>
   html,body{margin:0;height:100%;background:#07070c;overflow:hidden;
@@ -564,8 +568,15 @@ function pickDiff(ev){ ev.stopPropagation(); var el=ev.target.closest?ev.target.
 diffrow.addEventListener('click',pickDiff);
 diffrow.addEventListener('touchend',function(e){ e.preventDefault(); pickDiff(e); },{passive:false});
 
+function goFullscreen(){
+  var el=document.documentElement;
+  var rf=el.requestFullscreen||el.webkitRequestFullscreen||el.webkitRequestFullScreen||el.mozRequestFullScreen||el.msRequestFullscreen;
+  if(rf){ try{ var p=rf.call(el); if(p&&p.catch)p.catch(function(){}); }catch(e){} }   // no-op on iPhone Safari
+  if(screen.orientation && screen.orientation.lock){ try{ var q=screen.orientation.lock('landscape'); if(q&&q.catch)q.catch(function(){}); }catch(e){} }
+}
 function boot(){
   overlay.style.display='none';
+  if(isMobile) goFullscreen();
   applyDifficulty(difficulty);
   if(!actx){ try{ initAudio(); }catch(err){ console.log('audio fail',err); } } else if(actx.state==='suspended'){ actx.resume(); }
   startRun();
