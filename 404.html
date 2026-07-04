@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>benpong.com</title>
+<style>html,body{margin:0;height:100%;background:#07070c;color:#19e6d0;
+  font-family:'Courier New',monospace;display:flex;align-items:center;justify-content:center;}</style>
+<script>
+/* GitHub Pages clean-path router: benpong.com/<name> -> index.html at that level.
+   Unknown paths hit this 404; we stash a known level name and bounce to root,
+   where index.html restores the path and boots straight into that level. */
+(function(){
+  var seg=(location.pathname||'').replace(/^\/+|\/+$/g,'').toLowerCase().split('/')[0];
+  var known={ben:1,ally:1,dad:1,mom:1};
+  try{ if(known[seg]) sessionStorage.setItem('bp_route','/'+seg); }catch(e){}
+  location.replace('/'+(location.search||'')+(location.hash||''));
+})();
+</script>
+</head>
+<body>loading…</body>
+</html>
