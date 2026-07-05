@@ -62,10 +62,10 @@
   <h1>BEN&nbsp;PONG</h1>
   <div class="sub">Pong, but the ball is Ben's head — it bounces off the real edges of his face. You play the <span style="color:#39ff14">left</span> paddle; first to 11 wins the round.</div>
   <div class="ladder">
-    <span class="lvl"><canvas class="lvlicon" data-n="1" data-emoji="👀" data-color="#ff2f9d"></canvas>BEN</span>
-    <span class="lvl"><canvas class="lvlicon" data-n="2" data-emoji="😈" data-color="#ff6a00"></canvas>ALLY</span>
-    <span class="lvl"><canvas class="lvlicon" data-n="3" data-emoji="🌹" data-color="#ffd23f"></canvas>DAD</span>
-    <span class="lvl"><canvas class="lvlicon" data-n="4" data-emoji="🍄" data-color="#19e6d0"></canvas>MOM</span>
+    <span class="lvl"><canvas class="lvlicon" data-emoji="👀"></canvas>BEN</span>
+    <span class="lvl"><canvas class="lvlicon" data-emoji="😈"></canvas>ALLY</span>
+    <span class="lvl"><canvas class="lvlicon" data-emoji="🌹"></canvas>DAD</span>
+    <span class="lvl"><canvas class="lvlicon" data-emoji="🍄"></canvas>MOM</span>
   </div>
   <div class="diffwrap">
     <div class="difflabel">DIFFICULTY: <span id="dv">7</span> / 10</div>
@@ -80,7 +80,7 @@
   <div class="rwink">…Ben is waiting. 👀</div>
 </div>
 <script>
-/* Rasterize each level's emoji to a canvas, then burn the level number on top. */
+/* Rasterize each level's themed emoji to a crisp canvas badge. */
 (function(){
   var SIZE=26;
   function draw(){
@@ -92,15 +92,8 @@
       x.setTransform(dpr,0,0,dpr,0,0);
       x.clearRect(0,0,SIZE,SIZE);
       x.textAlign='center'; x.textBaseline='middle';
-      x.font='21px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+      x.font='22px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
       x.fillText(cv.dataset.emoji, SIZE/2, SIZE/2+1);
-      /* number superimposed, dark halo for legibility over the raster */
-      var n=cv.dataset.n;
-      x.font='bold 15px "Courier New",monospace';
-      x.lineJoin='round'; x.lineWidth=3.5; x.strokeStyle='rgba(7,7,12,.95)';
-      x.strokeText(n, SIZE/2, SIZE/2+.5);
-      x.fillStyle=cv.dataset.color||'#fff';
-      x.fillText(n, SIZE/2, SIZE/2+.5);
     });
     return ok;
   }
