@@ -19,10 +19,14 @@
     font-size:11px;letter-spacing:.5em;opacity:.4;}
   #overlay{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;
     justify-content:center;text-align:center;cursor:pointer;background:radial-gradient(ellipse at center,#141026 0%,#07070c 75%);}
-  #overlay h1{margin:0 0 .12em;font-size:clamp(34px,11vw,96px);letter-spacing:.08em;color:#ff2e88;
-    text-shadow:0 0 16px #ff2e88,0 0 44px #7a1046,4px 4px 0 #39ff14;}
-  #overlay .sub{font-size:clamp(13px,3.4vw,20px);opacity:.85;margin:.25em 0;max-width:36ch;line-height:1.5;}
-  #overlay .diffwrap{margin:1em 0 .2em;}
+  #overlay h1{margin:0 0 .12em;font-size:clamp(34px,11vw,96px);letter-spacing:.05em;color:#ff2f9d;
+    text-shadow:0 0 8px #ff2f9d,0 0 22px rgba(255,47,157,.55),4px 4px 0 #3a1242,7px 7px 0 #120817;}
+  #overlay .sub{font-size:clamp(13px,3.4vw,20px);opacity:.85;margin:.25em 0;max-width:34ch;line-height:1.5;}
+  #overlay .ladder{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:1.1em 0 .2em;max-width:min(92vw,420px);}
+  #overlay .ladder .lvl{display:inline-flex;align-items:center;gap:.5em;font-size:clamp(11px,2.9vw,14px);
+    letter-spacing:.14em;padding:4px 11px 4px 7px;border:1px solid #2a2a3d;border-radius:6px;background:#141422;opacity:.92;}
+  #overlay .ladder .lvlicon{display:block;image-rendering:auto;}
+  #overlay .diffwrap{margin:1.1em 0 .2em;}
   #overlay .difflabel{font-size:clamp(12px,3vw,17px);letter-spacing:.2em;color:#ffd23f;margin-bottom:.55em;}
   #diffrow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:min(92vw,440px);}
   .diffbtn{width:34px;height:38px;font-family:inherit;font-size:16px;font-weight:bold;color:#99a;
@@ -56,10 +60,13 @@
 <div id="btns"><button id="mute">♪ MUSIC: ON</button><button id="reset">RESET</button></div>
 <div id="overlay">
   <h1>BEN&nbsp;PONG</h1>
-  <div class="sub">The ball is Ben. Physics ride the true edges of his face — hair, cheeks &amp; all. Smack him and his eyes bulge.</div>
-  <div class="sub" style="opacity:.6">Beat Ben (first to 11) to unlock <span style="color:#ff6a00">LEVEL 2: ALLY</span> — demonic mode — then <span style="color:#ffd23f">LEVEL 3: DAD</span>. You are the <span style="color:#39ff14">left</span> paddle.</div>
-  <div class="sub" style="opacity:.55"><span style="color:#ffd23f">LEVEL 3: DAD</span> 🌹 — a long strange trip. Steal-your-face skulls, roses &amp; a jam-band groove… and a few things floating around that you probably shouldn't touch. ☮</div>
-  <div class="sub" style="opacity:.5"><span style="color:#19e6d0">LEVEL 4: MOM</span> ✦ the <b>Mandala Overlord Universe</b> — teal cosmos, lounge grooves, 70s-TV guest cameos that <i>change the channel</i>, and power-mushrooms that warp the arena into an 8-bit world.</div>
+  <div class="sub">Pong, but the ball is Ben's head — it bounces off the real edges of his face. You play the <span style="color:#39ff14">left</span> paddle; first to 11 wins the round.</div>
+  <div class="ladder">
+    <span class="lvl"><canvas class="lvlicon" data-n="1" data-emoji="👀" data-color="#ff2f9d"></canvas>BEN</span>
+    <span class="lvl"><canvas class="lvlicon" data-n="2" data-emoji="😈" data-color="#ff6a00"></canvas>ALLY</span>
+    <span class="lvl"><canvas class="lvlicon" data-n="3" data-emoji="🌹" data-color="#ffd23f"></canvas>DAD</span>
+    <span class="lvl"><canvas class="lvlicon" data-n="4" data-emoji="🍄" data-color="#19e6d0"></canvas>MOM</span>
+  </div>
   <div class="diffwrap">
     <div class="difflabel">DIFFICULTY: <span id="dv">7</span> / 10</div>
     <div id="diffrow"></div>
@@ -72,6 +79,37 @@
   <div class="rsub">BEN PONG is a <b>landscape</b> sport. Rotate your phone to enter the arena.</div>
   <div class="rwink">…Ben is waiting. 👀</div>
 </div>
+<script>
+/* Rasterize each level's emoji to a canvas, then burn the level number on top. */
+(function(){
+  var SIZE=26;
+  function draw(){
+    var dpr=window.devicePixelRatio||1, ok=true;
+    document.querySelectorAll('.lvlicon').forEach(function(cv){
+      cv.width=SIZE*dpr; cv.height=SIZE*dpr;
+      cv.style.width=SIZE+'px'; cv.style.height=SIZE+'px';
+      var x=cv.getContext('2d');
+      x.setTransform(dpr,0,0,dpr,0,0);
+      x.clearRect(0,0,SIZE,SIZE);
+      x.textAlign='center'; x.textBaseline='middle';
+      x.font='21px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+      x.fillText(cv.dataset.emoji, SIZE/2, SIZE/2+1);
+      /* number superimposed, dark halo for legibility over the raster */
+      var n=cv.dataset.n;
+      x.font='bold 15px "Courier New",monospace';
+      x.lineJoin='round'; x.lineWidth=3.5; x.strokeStyle='rgba(7,7,12,.95)';
+      x.strokeText(n, SIZE/2, SIZE/2+.5);
+      x.fillStyle=cv.dataset.color||'#fff';
+      x.fillText(n, SIZE/2, SIZE/2+.5);
+    });
+    return ok;
+  }
+  draw();
+  /* redraw once the color-emoji font is guaranteed ready */
+  if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(draw); }
+  window.addEventListener('load',draw);
+})();
+</script>
 <script>
 (function(){
 "use strict";
